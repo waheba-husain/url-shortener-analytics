@@ -1,9 +1,10 @@
 from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
-from database import get_db
+from database import get_db, Base, engine
 from models import URL
 from schemas import URLCreate, URLResponse
 from shortener import encode
+Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
