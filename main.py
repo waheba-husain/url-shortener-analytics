@@ -4,6 +4,8 @@ from database import get_db, Base, engine
 from models import URL
 from schemas import URLCreate, URLResponse
 from shortener import encode
+from fastapi.responses import RedirectResponse
+
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
@@ -34,3 +36,10 @@ def shorten_url(url_data: URLCreate, db: Session = Depends(get_db)):
         db.refresh(new_url)
 
     return new_url
+
+@app.get("/{short_code}")
+def redirect_url(short_code: str, db: Session = Depends(get_db)):
+    url_entry = db.query(URL).filter(URL.short_code == short_code).first()
+    if not url_entry:
+        raise HTTPException(status_code=404, detail="Short URL not found")
+    return RedirectResponse(url=url_entry.long_url, status_code=302)
